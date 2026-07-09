@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2026 KH국 단기선교 물품 후원</title>
+  <style>
+    body {
+      margin: 0; min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 18px; padding: 32px 24px; text-align: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      color: #1E3A55; background: #F5F7FA;
+    }
+    h1 { font-size: 20px; margin: 0; }
+    p  { font-size: 15px; line-height: 1.7; color: #4E617A; margin: 0; max-width: 360px; }
+    button, a.btn {
+      display: inline-block; margin-top: 8px; padding: 14px 28px;
+      border: none; border-radius: 12px; background: #4A6CB3;
+      color: #fff; font-size: 16px; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+    }
+    .sub { font-size: 13px; color: #8494A6; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>후원 페이지로 이동합니다</h1>
+  <p id="msg">잠시만 기다려 주세요…</p>
+
+  <!-- 자동 이동이 안 될 때를 위한 수동 버튼 (기본 숨김) -->
+  <a id="manualBtn" class="btn" href="#" style="display:none;">외부 브라우저로 열기</a>
+  <div id="copyArea" style="display:none;">
+    <button id="copyBtn">주소 복사하기</button>
+    <p class="sub">복사한 뒤 Chrome이나 Safari 주소창에 붙여넣어 주세요.</p>
+  </div>
+
+  <script>
+    // ▼▼▼ 실제 Apps Script 웹앱 배포 URL로 바꾸세요 (…/exec 로 끝나는 주소) ▼▼▼
+    var TARGET_URL = "https://script.google.com/macros/s/AKfycbxtUcP9DKMbiHT30KLwGxxDO75Rkl1DQzwcvBKs-p2uPxml1O9nDYNudt29bTOo6N0M/exec";
+    // ▲▲▲
+
+    (function () {
+      var ua = navigator.userAgent.toLowerCase();
+      var isKakao = ua.indexOf("kakaotalk") !== -1;
+      var isAndroid = ua.indexOf("android") !== -1;
+      var isIOS = /iphone|ipad|ipod/.test(ua);
+      var msg = document.getElementById("msg");
+
+      if (!isKakao) {
+        // 카톡이 아니면 (이미 외부 브라우저) 그냥 목적지로 바로 이동
+        location.replace(TARGET_URL);
+        return;
+      }
+
+      if (isAndroid) {
+        // 안드로이드: 크롬으로 강제 이동 (intent 스킴)
+        var noScheme = TARGET_URL.replace(/^https?:\/\//i, "");
+        location.href =
+          "intent://" + noScheme +
+          "#Intent;scheme=https;package=com.android.chrome;end";
+        // 혹시 실패하면 수동 버튼 노출
+        setTimeout(showManual, 1500);
+      } else if (isIOS) {
+        // iOS: 카카오 외부 브라우저 스킴 호출
+        location.href =
+          "kakaotalk://web/openExternal?url=" + encodeURIComponent(TARGET_URL);
+        // iOS는 스킴이 막히는 경우가 있어 복사 방식도 함께 제공
+        setTimeout(showCopy, 1200);
+      } else {
+        showManual();
+      }
+
+      function showManual() {
+        msg.textContent = "자동 이동이 안 되면 아래 버튼을 눌러주세요.";
+        var b = document.getElementById("manualBtn");
+        b.href = TARGET_URL;
+        b.style.display = "inline-block";
+      }
+
+      function showCopy() {
+        msg.textContent = "자동 이동이 안 되면 주소를 복사해 브라우저에서 열어주세요.";
+        document.getElementById("copyArea").style.display = "block";
+        document.getElementById("copyBtn").addEventListener("click", function () {
+          var ta = document.createElement("textarea");
+          ta.value = TARGET_URL;
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand("copy");
+            this.textContent = "복사됐어요! 브라우저에 붙여넣으세요";
+          } catch (e) {
+            this.textContent = "복사 실패 — 주소를 길게 눌러 복사하세요";
+          }
+          document.body.removeChild(ta);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
